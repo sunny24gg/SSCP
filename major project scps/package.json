@@ -1,0 +1,12 @@
+{
+  "name": "groundrag-source-grounded-system",
+  "version": "1.0.0",
+  "description": "Source-Grounded RAG System with Traceable References and Mind Map Generator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["rag", "source-grounding", "citations", "mindmap", "research"],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Source-Supported Contextual Platform</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338bdf8'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+  <!-- Google Fonts: Plus Jakarta Sans, Source Serif 4 & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <!-- PDF.js CDN for client-side PDF text parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Tesseract.js for Google Lens OCR & Screen Vision -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+  <!-- Top App Navigation (ChatGPT / Gemini AI Style) -->
+  <header class="app-header">
+    <div class="header-left-group">
+      <button class="icon-nav-btn" id="btn-toggle-sidebar" title="Toggle Sidebar (Ctrl+B)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
+      <div class="brand-section">
+        <div class="brand-title">
+          Source-Supported Contextual Platform
+          <span class="brand-badge">✨ Gemini Grounding 2.0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-status-group">
+      <button class="header-btn header-btn-new-chat" id="btn-header-new-chat" title="Start a fresh conversation">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        New Chat
+      </button>
+
+      <button class="header-btn header-btn-lens" id="btn-header-screen-lens" title="Google Lens - Capture and Read Screen">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M3 9V5a2 2 0 0 1 2-2h4M19 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M5 21H3a2 2 0 0 1-2-2v-4"/>
+        </svg>
+        <span>Screen Lens</span>
+      </button>
+
+      <div class="status-pill" id="status-engine-pill">
+        <span class="pulse-dot"></span>
+        <span id="engine-status-text">Grounding: <strong>Local Smart RAG</strong></span>
+      </div>
+
+
+
+      <div class="header-canvas-toggles">
+        <button class="header-icon-btn" id="btn-toggle-sources-drawer" title="Toggle Sources & Evidence Inspector">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          <span>Evidence</span>
+        </button>
+        <button class="header-icon-btn" id="btn-toggle-mindmap-drawer" title="Toggle Grounded Mind Map">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          <span>Mind Map</span>
+        </button>
+        <button class="header-icon-btn" id="btn-toggle-overlay-mode" title="Toggle Floating Overlay Assistant Mode">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <rect x="11" y="11" width="8" height="8" rx="1" fill="currentColor" fill-opacity="0.3"/>
+          </svg>
+          <span>Overlay</span>
+        </button>
+      </div>
+
+      <!-- Overlay Window Controls (macOS traffic-light style; shown only in overlay mode via CSS) -->
+      <div class="overlay-window-controls">
+        <button class="overlay-ctrl-btn overlay-ctrl-minimize" id="btn-overlay-minimize" title="Minimize to bubble">—</button>
+        <button class="overlay-ctrl-btn overlay-ctrl-restore"  id="btn-overlay-restore"  title="Restore full workspace">⤢</button>
+        <button class="overlay-ctrl-btn overlay-ctrl-close"    id="btn-overlay-close"    title="Exit overlay mode">✕</button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main App Layout (ChatGPT & Gemini Workspace) -->
+  <div class="app-layout">
+
+    <!-- LEFT SIDEBAR: Collapsible Navigation & Knowledge Bases -->
+    <aside class="app-sidebar" id="app-sidebar">
+      <div class="sidebar-top-action">
+        <button class="sidebar-new-chat-btn" id="btn-new-chat">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>New Chat</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title">
+          <span>Active Knowledge Sources</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span id="sources-count" class="sources-counter-badge">0</span>
+            <button class="sidebar-add-btn" id="btn-sidebar-add-source" title="Add Source">+</button>
+            <button class="sidebar-clear-btn" id="btn-clear-all-sources" title="Clear all sources" style="display: none;">✕</button>
+          </div>
+        </div>
+        <div class="sources-list" id="sources-list">
+          <!-- Dynamically filled -->
+        </div>
+      </div>
+
+
+      <div class="sidebar-footer-note">
+        <div class="grounding-badge-mini">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Strict Verbatim Provenance
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER PANE: Spacious AI Chat Assistant Viewport -->
+    <main class="app-chat-pane">
+      
+      <!-- HERO WELCOME VIEW (ChatGPT / Gemini AI Landing Screen) -->
+      <div class="chat-hero-container" id="chat-hero-container">
+        <div class="hero-sparkle-icon">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="url(#geminiGradient)">
+            <path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z"/>
+          </svg>
+        </div>
+        
+        <h1 class="hero-greeting">
+          <span class="gemini-text-gradient">Hello, Researcher</span>
+          <br>What would you like to ground today?
+        </h1>
+        
+        <p class="hero-subtitle">
+          Upload a research paper, link a GitHub repository, or fetch live documentation to chat with strict, traceable citations.
+        </p>
+
+        <!-- Interactive Starter Cards (Gemini Style) -->
+        <div class="hero-cards-grid">
+          <div class="hero-action-card" id="card-hero-upload-pdf">
+            <div class="card-icon-bubble" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <div class="card-title">Upload PDF Paper</div>
+            <div class="card-desc">Parse academic papers with page-level verbatim provenance</div>
+          </div>
+
+          <div class="hero-action-card" id="card-hero-github">
+            <div class="card-icon-bubble" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            </div>
+            <div class="card-title">Import GitHub Repo</div>
+            <div class="card-desc">Extract repository READMEs, code structures, and APIs</div>
+          </div>
+
+          <div class="hero-action-card" id="card-hero-website">
+            <div class="card-icon-bubble" style="background: rgba(192, 132, 252, 0.15); color: #c084fc;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div class="card-title">Fetch Website Link</div>
+            <div class="card-desc">Scrape and ground live technical articles & documentation</div>
+          </div>
+
+          <div class="hero-action-card" id="card-hero-mindmap">
+            <div class="card-icon-bubble" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </div>
+            <div class="card-title">Explore Mind Map</div>
+            <div class="card-desc">Synthesize an interactive visual concept tree from sources</div>
+          </div>
+
+          <div class="hero-action-card lens-hero-card" id="card-hero-screen-lens">
+            <div class="card-icon-bubble" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9V5a2 2 0 0 1 2-2h4M19 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M5 21H3a2 2 0 0 1-2-2v-4"/>
+              </svg>
+            </div>
+            <div class="card-title">Google Lens Screen Vision</div>
+            <div class="card-desc">Scan, OCR and analyze whatever is on your screen in real time</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Stream (ChatGPT / Gemini conversational flow) -->
+      <div class="chat-messages" id="chat-messages" style="display: none;">
+        <!-- Filled dynamically -->
+      </div>
+
+      <!-- Quick Prompts Chips -->
+      <div class="quick-prompts-wrapper" id="quick-prompts-bar">
+        <div class="quick-prompt-chip prompt-chip-lens" id="chip-gen-mindmap" data-prompt="Generate a comprehensive grounded mind map from my active PDF documents with core branches and key evidence points.">
+          🧠 Generate Mind Map from PDF
+        </div>
+        <div class="quick-prompt-chip prompt-chip-lens" id="chip-gen-diagram" data-prompt="Generate a visual architecture concept diagram and infographic image breakdown from the content.">
+          🖼️ Generate Concept Diagram Image
+        </div>
+        <div class="quick-prompt-chip prompt-chip-lens" id="chip-lens-screen" data-prompt="Analyze and explain what is currently displayed on my screen. Highlight any errors, key text, or code.">
+          🔍 What is on my screen?
+        </div>
+        <div class="quick-prompt-chip" data-prompt="Summarize the core topics, main findings, and key takeaways across the active sources.">
+          📋 Summarize Main Findings
+        </div>
+        <div class="quick-prompt-chip" data-prompt="What are the key technical concepts, methods, or architectures described in the uploaded documents?">
+          🔍 Key Concepts & Architecture
+        </div>
+      </div>
+
+      <!-- Gemini-Style Floating Capsule Input Bar -->
+      <div class="chat-input-container">
+        <div class="gemini-input-pill">
+          <!-- In-pill source shortcuts -->
+          <div class="pill-tools-left">
+            <button class="pill-action-btn pill-btn-lens" id="btn-pill-screen-lens" title="Google Lens - Capture and Read Screen">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9V5a2 2 0 0 1 2-2h4M19 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M5 21H3a2 2 0 0 1-2-2v-4"/>
+              </svg>
+              <span>Lens</span>
+            </button>
+            <button class="pill-action-btn" id="btn-pill-upload-pdf" title="Upload PDF Research Paper">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span>PDF</span>
+            </button>
+            <button class="pill-action-btn" id="btn-pill-github" title="Import GitHub Repository or Code">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              <span>GitHub</span>
+            </button>
+            <button class="pill-action-btn" id="btn-pill-website" title="Fetch Documentation / Website Link">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span>Web</span>
+            </button>
+          </div>
+
+          <div class="pill-input-center">
+            <input type="text" id="chat-input" class="gemini-chat-textarea" placeholder="Ask anything, or click 'Generate Mind Map / Diagram Image' from your PDF..." autocomplete="off">
+          </div>
+
+          <div class="pill-tools-right">
+            <button id="chat-send-btn" class="gemini-send-btn" title="Send Question (Enter)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="chat-input-disclaimer">
+          GroundRAG synthesizes answers strictly grounded in active knowledge bases. Citations link directly to verbatim source offsets.
+        </div>
+      </div>
+    </main>
+
+    <!-- RIGHT SLIDE-OVER CANVAS DRAWER (Evidence Inspector & Mind Map) -->
+    <aside class="app-right-panel" id="app-right-panel">
+      <div class="panel-header-tabs">
+        <button class="panel-tab active" id="tab-btn-inspector" data-tab="inspector">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          Evidence
+        </button>
+        <button class="panel-tab" id="tab-btn-mindmap" data-tab="mindmap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          Mind Map
+        </button>
+        <button class="panel-tab" id="btn-quick-gen-mindmap" title="Generate Mind Map from Active PDF or Content" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.72rem; padding: 4px 8px;">
+          ⚡ From PDF
+        </button>
+        <button class="panel-tab" id="btn-quick-gen-diagram" title="Generate Concept Diagram Image from Content" style="background: rgba(192, 132, 252, 0.12); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.3); font-size: 0.72rem; padding: 4px 8px;">
+          🖼️ Diagram
+        </button>
+        <button class="panel-tab icon-tab-btn" id="btn-toggle-expand" title="Expand / Collapse Width">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+          </svg>
+        </button>
+        <button class="panel-tab icon-tab-btn" id="btn-close-drawer" title="Close Drawer (Esc)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="panel-content-area">
+        <!-- Tab Pane 1: Evidence Inspector -->
+        <div class="tab-pane active" id="pane-inspector">
+          <div class="inspector-body" id="inspector-chunks-container">
+            <div style="text-align: center; color: var(--text-dim); padding: 40px 20px; font-size: 0.82rem;">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(56, 189, 248, 0.4)" stroke-width="1.5" style="margin-bottom: 12px;">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <br>
+              <strong>Traceable Evidence Inspector</strong><br>
+              Ask a question or click any <span class="citation-badge">[1]</span> citation in the chat to view the verbatim source excerpt, chunk provenance, and confidence breakdown.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Pane 2: Grounded Mind Map -->
+        <div class="tab-pane" id="pane-mindmap">
+          <div id="mindmap-container" style="width: 100%; height: 100%;">
+            <!-- Mind map canvas rendered here -->
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Multi-Source Ingestion Modal -->
+  <div class="modal-overlay" id="modal-add-source">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+          Ingest Knowledge Source
+        </div>
+        <button class="modal-close-btn" id="modal-btn-close">&times;</button>
+      </div>
+
+      <!-- Ingestion Tabs -->
+      <div class="modal-tabs">
+        <button class="modal-tab-btn active" data-ingest-tab="tab-upload">
+          📄 Upload File (PDF / Code)
+        </button>
+        <button class="modal-tab-btn" data-ingest-tab="tab-lens">
+          🔍 Screen Lens (Vision)
+        </button>
+        <button class="modal-tab-btn" data-ingest-tab="tab-github">
+          🐙 GitHub Link
+        </button>
+        <button class="modal-tab-btn" data-ingest-tab="tab-website">
+          🌐 Website Link
+        </button>
+        <button class="modal-tab-btn" data-ingest-tab="tab-paste">
+          📝 Paste Text
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Tab 1: File Upload (PDF, Python, Text, Markdown) -->
+        <div class="ingest-pane active" id="pane-tab-upload">
+          <div class="file-drop-zone" id="file-drop-zone">
+            <input type="file" id="file-input" accept=".pdf,.txt,.md,.py,.js,.jsx,.ts,.tsx,.json,.csv,.html,.c,.cpp,.java" style="display: none;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" style="margin-bottom: 8px;">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <div style="font-size: 0.88rem; font-weight: 600; color: #f8fafc;">
+              Click to browse or drop your document here
+            </div>
+            <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 4px;">
+              Supports PDF research papers, Python/JS source code, Markdown, and Text files
+            </div>
+          </div>
+          <div id="file-info-preview" style="display: none; margin-top: 12px;" class="info-preview-box">
+            <div style="font-size: 0.82rem; font-weight: 600; color: #93c5fd;" id="preview-file-name">filename.pdf</div>
+            <div style="font-size: 0.72rem; color: var(--text-dim);" id="preview-file-size">0 KB</div>
+          </div>
+        </div>
+
+        <!-- Tab 2: GitHub Repository or File Link -->
+        <div class="ingest-pane" id="pane-tab-github">
+          <div class="form-field">
+            <label>GitHub URL (Repository or specific code file)</label>
+            <input type="text" id="github-url-input" class="form-input" placeholder="https://github.com/owner/repo or https://raw.githubusercontent.com/...">
+            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;">
+              Examples: <code>https://github.com/facebook/react</code> or a direct raw file URL.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Website URL -->
+        <div class="ingest-pane" id="pane-tab-website">
+          <div class="form-field">
+            <label>Website or Documentation URL</label>
+            <input type="text" id="website-url-input" class="form-input" placeholder="https://en.wikipedia.org/wiki/... or docs URL">
+            <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;">
+              GroundRAG will fetch the webpage, strip boilerplate, and chunk the readable text.
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Paste Raw Text -->
+        <div class="ingest-pane" id="pane-tab-paste">
+          <div class="form-field">
+            <label>Document Title</label>
+            <input type="text" id="doc-title-input" class="form-input" placeholder="e.g. Wallat_et_al_2025_Notes.txt">
+          </div>
+          <div class="form-field">
+            <label>Source Type</label>
+            <select id="doc-type-input" class="form-input">
+              <option value="paper">Academic Research Paper (PDF)</option>
+              <option value="code">Codebase / Repository (GitHub)</option>
+              <option value="docs">Technical Specification / Documentation</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Raw Content</label>
+            <textarea id="doc-content-input" class="form-input form-textarea" placeholder="Paste source text here with sections and paragraphs..."></textarea>
+          </div>
+        </div>
+
+        <!-- Tab 5: Google Lens Screen Vision -->
+        <div class="ingest-pane" id="pane-tab-lens">
+          <div class="lens-tab-card">
+            <div class="lens-icon-bubble-lg">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M3 9V5a2 2 0 0 1 2-2h4M19 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M5 21H3a2 2 0 0 1-2-2v-4"/>
+              </svg>
+            </div>
+            <h3 style="font-size: 0.98rem; color: #f8fafc; margin-bottom: 6px; font-weight: 700;">Google Lens Screen Vision</h3>
+            <p style="font-size: 0.78rem; color: #94a3b8; line-height: 1.5; margin-bottom: 16px; max-width: 440px; margin-left: auto; margin-right: auto;">
+              Capture your current screen, an application window, or a browser tab. GroundRAG reads the visual content, extracts code and text with OCR, and answers questions with verbatim visual citations.
+            </p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+              <button class="lens-cta-btn" id="btn-modal-capture-screen">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M3 9V5a2 2 0 0 1 2-2h4M19 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M5 21H3a2 2 0 0 1-2-2v-4"/></svg>
+                <span>Capture Live Screen</span>
+              </button>
+              <button class="lens-cta-btn secondary" id="btn-modal-upload-screenshot">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>Upload Screenshot</span>
+              </button>
+            </div>
+            <input type="file" id="screenshot-file-input" accept="image/*" style="display: none;">
+            <div style="margin-top: 14px; font-size: 0.72rem; color: #64748b;">
+              💡 <em>Tip: You can also press <strong>Ctrl+V</strong> anywhere in GroundRAG to paste a screenshot!</em>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ingestion Status / Loader -->
+        <div id="ingest-status-msg" style="display: none; padding: 10px; border-radius: 8px; font-size: 0.78rem; margin-top: 8px;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="modal-cancel-btn" id="modal-btn-cancel">Cancel</button>
+        <button class="modal-submit-btn" id="modal-btn-submit">
+          <span id="submit-btn-text">Index & Ingest</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Gemini API Key Config -->
+  <div class="modal-overlay" id="modal-gemini-key">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="url(#geminiGradient)"><path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z"/></svg>
+          Google Gemini AI Integration
+        </div>
+        <button class="modal-close-btn" id="modal-gemini-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 12px;">
+          GroundRAG uses an intelligent built-in semantic grounding engine by default. You can optionally connect your <strong>Google Gemini API Key</strong> to use <strong>Gemini 1.5 Flash</strong> with strict source-grounding.
+        </div>
+        <div class="form-field">
+          <label>Google AI Studio API Key (Optional)</label>
+          <input type="password" id="gemini-api-key-input" class="form-input" placeholder="AIzaSy...">
+          <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 6px;">
+            Get a free API key at <a href="https://aistudio.google.com/" target="_blank" style="color: var(--blue-neon); text-decoration: underline;">Google AI Studio</a>. Saved only in your browser local storage.
+          </div>
+        </div>
+        <div id="gemini-key-status" style="display: none; padding: 10px; border-radius: 8px; font-size: 0.78rem;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-cancel-btn" id="btn-gemini-clear-key">Clear Key</button>
+        <button class="modal-submit-btn" id="btn-gemini-save-key">Save & Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Lens Viewfinder Scanner HUD Modal -->
+  <div class="lens-scanner-overlay" id="lens-scanner-overlay" style="display: none;">
+    <div class="lens-viewfinder-box">
+      <div class="lens-corner top-left"></div>
+      <div class="lens-corner top-right"></div>
+      <div class="lens-corner bottom-left"></div>
+      <div class="lens-corner bottom-right"></div>
+      <div class="lens-laser-beam" id="lens-laser-beam"></div>
+      <div class="lens-preview-img-wrap" id="lens-preview-wrap">
+        <img id="lens-preview-img" src="" alt="Screen Capture">
+        <div id="lens-boxes-layer" class="lens-boxes-layer"></div>
+      </div>
+      <div class="lens-hud-status" id="lens-hud-status">
+        <span class="pulse-dot" style="background: #fbbf24; box-shadow: 0 0 10px #fbbf24;"></span>
+        <span id="lens-status-text">Google Lens: Scanning & reading screen elements...</span>
+      </div>
+      <button class="lens-cancel-btn" id="btn-cancel-lens" title="Close Lens Scanner">&times;</button>
+    </div>
+  </div>
+
+  <!-- Floating Assistant Bubble Launcher (When minimized in Overlay Mode) -->
+  <button class="floating-assistant-bubble" id="floating-assistant-bubble" title="Restore GroundRAG Assistant" style="display: none;">
+    <div class="bubble-sparkle">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+        <path d="M12 2C12 7.52 7.52 12 2 12C7.52 12 12 16.48 12 22C12 16.48 16.48 12 22 12C16.48 12 12 7.52 12 2Z"/>
+      </svg>
+    </div>
+    <span class="bubble-label">GroundRAG</span>
+  </button>
+
+  <!-- Scripts -->
+  <script src="data/default-sources.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/rag-engine.js"></script>
+  <script src="js/screen-lens.js"></script>
+  <script src="js/mindmap.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
